@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mouse Aim Tester</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #gameArea {
+            width: 100vw;
+            height: 80vh;
+            position: relative;
+            border: 2px solid black;
+            margin: 20px auto;
+            overflow: hidden;
+            background-color: lightgray;
+            display: none;
+        }
+        .target {
+            background-color: red;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid black;
+        }
+        #finalScore, #retestBtn {
+            display: none;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        #sizeSlider {
+            margin: 10px;
+        }
+        #dotPreview {
+            width: 20px;
+            height: 20px;
+            background-color: red;
+            border-radius: 50%;
+            display: inline-block;
+            border: 2px solid black;
+            vertical-align: middle;
+        }
+        #startScreen {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mouse Aim Tester</h1>
+    <p>Click the red dot as quickly as possible!</p>
+    <p>Score: <span id="score">0</span></p>
+    <label for="sizeSlider">Dot Size:</label>
+    <input type="range" id="sizeSlider" min="10" max="50" value="20" oninput="updateSize()">
+    <div id="dotPreview"></div>
+    <div id="startScreen">
+        <button onclick="startTest()">Start</button>
+    </div>
+    <div id="gameArea"></div>
+    <p id="finalScore"></p>
+    <button id="retestBtn" onclick="startTest()">Retest</button>
+    <script>
+        const gameArea = document.getElementById("gameArea");
+        const scoreDisplay = document.getElementById("score");
+        const finalScore = document.getElementById("finalScore");
+        const retestBtn = document.getElementById("retestBtn");
+        const sizeSlider = document.getElementById("sizeSlider");
+        const dotPreview = document.getElementById("dotPreview");
+        const startScreen = document.getElementById("startScreen");
+        let score = 0;
+        let startTime;
+        let targetSize = parseInt(sizeSlider.value);
+
+        function updateSize() {
+            targetSize = parseInt(sizeSlider.value);
+            dotPreview.style.width = `${targetSize}px`;
+            dotPreview.style.height = `${targetSize}px`;
+        }
+
+        function createTarget() {
+            if (score >= 20) {
+                let endTime = performance.now();
+                let responseTime = ((endTime - startTime) / 20).toFixed(2);
+                finalScore.textContent = `Test Complete! Average response time: ${responseTime} ms`;
+                finalScore.style.display = "block";
+                retestBtn.style.display = "block";
+                return;
+            }
+
+            const target = document.createElement("div");
+            target.classList.add("target");
+            target.style.width = `${targetSize}px`;
+            target.style.height = `${targetSize}px`;
+            
+            const padding = 30;
+            const x = Math.random() * (gameArea.clientWidth - targetSize - padding * 2) + padding;
+            const y = Math.random() * (gameArea.clientHeight - targetSize - padding * 2) + padding;
+            
+            target.style.left = `${x}px`;
+            target.style.top = `${y}px`;
+            
+            target.addEventListener("click", () => {
+                score++;
+                scoreDisplay.textContent = score;
+                target.remove();
+                createTarget();
+            });
+            
+            gameArea.appendChild(target);
+        }
+
+        function startTest() {
+            score = 0;
+            scoreDisplay.textContent = score;
+            finalScore.style.display = "none";
+            retestBtn.style.display = "none";
+            startScreen.style.display = "none";
+            gameArea.style.display = "block";
+            startTime = performance.now();
+            gameArea.innerHTML = "";
+            createTarget();
+        }
+    </script>
+</body>
+</html>
